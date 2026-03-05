@@ -1,18 +1,47 @@
 # CarbonQt
 
+<div align="center">
+
 [![CI](https://img.shields.io/github/actions/workflow/status/AppajiDheeraj/GreenTrace/ci.yml?branch=main&logo=github)](https://github.com/AppajiDheeraj/GreenTrace/actions/workflows/ci.yml)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/AppajiDheeraj/GreenTrace?logo=go)](go.mod)
 [![Latest Release](https://img.shields.io/github/v/release/AppajiDheeraj/GreenTrace?logo=github)](https://github.com/AppajiDheeraj/GreenTrace/releases)
 
-CarbonQt is a cross-platform CLI dashboard for estimating process energy use and carbon emissions in real time. It provides a clean TUI, highlights top emitters, and supports quick actions like process selection and termination.
+**Real-time CLI dashboard for process energy use and carbon emissions**
 
-## Features
+CarbonQt is a cross-platform terminal UI that estimates per-process energy and carbon impact, highlights top emitters, and lets you act fast with keyboard-driven controls.
+
+</div>
+
+## Overview
+
+CarbonQt continuously samples system processes and presents a live dashboard that combines CPU, memory, power, and carbon estimates. It is built for quick inspection during development and ops workflows, especially when you want a fast signal on the most expensive processes running on your machine.
+
+## Key Features
 
 - Live system overview (CPU, RAM, platform, uptime)
 - Top carbon process summary
 - Process table with CPU, memory, power, carbon, runtime, and path
 - Keyboard navigation with a kill action
-- Repo-aware process filtering
+- Repo-aware filtering to focus on current workspace
+
+## Architecture
+
+CarbonQt is organized as a small CLI with composable internal packages:
+
+- `cmd/` for CLI commands and flags
+- `internal/monitor/` for system and process sampling
+- `internal/energy/` for power and carbon estimation
+- `internal/ui/` for dashboard rendering and interactions
+- `internal/repo/` for repo detection and filtering
+
+```mermaid
+flowchart LR
+	A[CLI Commands] --> B[Monitor]
+	B --> C[Energy Estimator]
+	B --> D[Repo Filter]
+	C --> E[UI Dashboard]
+	D --> E
+```
 
 ## Quick Start
 
@@ -20,6 +49,47 @@ CarbonQt is a cross-platform CLI dashboard for estimating process energy use and
 go build -o carbonqt
 ./carbonqt dashboard
 ```
+
+## Install and Run
+
+### Option 1: Download the latest release
+
+- Grab the newest build from the GitHub Releases page:
+	https://github.com/AppajiDheeraj/GreenTrace/releases/latest
+
+After downloading the binary for your OS, run:
+
+```bash
+./carbonqt dashboard
+```
+
+#### One-line auto-download (replace the asset name)
+
+Windows PowerShell:
+
+```powershell
+$asset = "carbonqt_windows_amd64.zip"; $url = "https://github.com/AppajiDheeraj/GreenTrace/releases/latest/download/$asset"; Invoke-WebRequest -Uri $url -OutFile $asset
+```
+
+macOS/Linux (curl):
+
+```bash
+asset="carbonqt_darwin_amd64.tar.gz"; curl -L "https://github.com/AppajiDheeraj/GreenTrace/releases/latest/download/$asset" -o "$asset"
+```
+
+### Option 2: Clone and run locally
+
+```bash
+git clone https://github.com/AppajiDheeraj/GreenTrace.git
+cd GreenTrace
+go build -o carbonqt
+./carbonqt dashboard
+```
+
+### Option 3: Build release artifacts locally
+
+- Unix/macOS: [scripts/build-release.sh](scripts/build-release.sh)
+- Windows PowerShell: [scripts/build-release.ps1](scripts/build-release.ps1)
 
 ## Commands
 
@@ -65,4 +135,4 @@ On Windows PowerShell:
 ./scripts/build-release.ps1
 ```
 
-For release notes, use GitHub Releases and summarize:
+For release notes, use GitHub Releases and summarize key changes.
