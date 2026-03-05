@@ -7,7 +7,7 @@ ifeq ($(OS),Windows_NT)
 EXE := .exe
 endif
 
-.PHONY: build run test vet fmt clean
+.PHONY: build run test vet fmt clean release
 
 build:
 	$(GO) build -o $(BUILD_DIR)/$(BINARY)$(EXE)
@@ -26,3 +26,6 @@ fmt:
 
 clean:
 	rm -rf $(BUILD_DIR)
+
+release:
+	./scripts/build-release.sh

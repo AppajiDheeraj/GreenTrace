@@ -53,7 +53,16 @@ make build
 
 ## Release and Tagging
 
+Build release artifacts locally:
+
+```bash
+./scripts/build-release.sh
+```
+
+On Windows PowerShell:
+
+```powershell
+./scripts/build-release.ps1
+```
+
 For release notes, use GitHub Releases and summarize:
-- New features
-- Fixes
-- Known issues
