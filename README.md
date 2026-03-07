@@ -1,20 +1,19 @@
-# CarbonQt
-
 <div align="center">
-
+<p align="center">
+  <img src="GreenTrace.png" alt="GreenTrace Banner" width="100%">
+</p>
+	
 [![CI](https://img.shields.io/github/actions/workflow/status/AppajiDheeraj/GreenTrace/ci.yml?branch=main&logo=github)](https://github.com/AppajiDheeraj/GreenTrace/actions/workflows/ci.yml)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/AppajiDheeraj/GreenTrace?logo=go)](go.mod)
 [![Latest Release](https://img.shields.io/github/v/release/AppajiDheeraj/GreenTrace?logo=github)](https://github.com/AppajiDheeraj/GreenTrace/releases)
 
-**Real-time CLI dashboard for process energy use and carbon emissions**
-
-CarbonQt is a cross-platform terminal UI that estimates per-process energy and carbon impact, highlights top emitters, and lets you act fast with keyboard-driven controls.
+**GreenTrace is a cross-platform terminal UI that estimates per-process energy and carbon impact, highlights top emitters, and lets you act fast with keyboard-driven controls.**
 
 </div>
 
 ## Overview
 
-CarbonQt continuously samples system processes and presents a live dashboard that combines CPU, memory, power, and carbon estimates. It is built for quick inspection during development and ops workflows, especially when you want a fast signal on the most expensive processes running on your machine.
+GreenTrace continuously samples system processes and presents a live dashboard that combines CPU, memory, power, and carbon estimates. It is built for quick inspection during development and ops workflows, especially when you want a fast signal on the most expensive processes running on your machine.
 
 ## Key Features
 
@@ -26,7 +25,7 @@ CarbonQt continuously samples system processes and presents a live dashboard tha
 
 ## Architecture
 
-CarbonQt is organized as a small CLI with composable internal packages:
+GreenTrace is organized as a small CLI with composable internal packages:
 
 - `cmd/` for CLI commands and flags
 - `internal/monitor/` for system and process sampling
@@ -46,8 +45,8 @@ flowchart LR
 ## Quick Start
 
 ```bash
-go build -o carbonqt
-./carbonqt dashboard
+go build -o GreenTrace
+./GreenTrace dashboard
 ```
 
 ## Install and Run
@@ -60,7 +59,7 @@ go build -o carbonqt
 After downloading the binary for your OS, run:
 
 ```bash
-./carbonqt dashboard
+./GreenTrace dashboard
 ```
 
 #### One-line auto-download (replace the asset name)
@@ -68,13 +67,13 @@ After downloading the binary for your OS, run:
 Windows PowerShell:
 
 ```powershell
-$asset = "carbonqt_windows_amd64.zip"; $url = "https://github.com/AppajiDheeraj/GreenTrace/releases/latest/download/$asset"; Invoke-WebRequest -Uri $url -OutFile $asset
+$asset = "GreenTrace_windows_amd64.zip"; $url = "https://github.com/AppajiDheeraj/GreenTrace/releases/latest/download/$asset"; Invoke-WebRequest -Uri $url -OutFile $asset
 ```
 
 macOS/Linux (curl):
 
 ```bash
-asset="carbonqt_darwin_amd64.tar.gz"; curl -L "https://github.com/AppajiDheeraj/GreenTrace/releases/latest/download/$asset" -o "$asset"
+asset="GreenTrace_darwin_amd64.tar.gz"; curl -L "https://github.com/AppajiDheeraj/GreenTrace/releases/latest/download/$asset" -o "$asset"
 ```
 
 ### Option 2: Clone and run locally
@@ -82,8 +81,8 @@ asset="carbonqt_darwin_amd64.tar.gz"; curl -L "https://github.com/AppajiDheeraj/
 ```bash
 git clone https://github.com/AppajiDheeraj/GreenTrace.git
 cd GreenTrace
-go build -o carbonqt
-./carbonqt dashboard
+go build -o GreenTrace
+./GreenTrace dashboard
 ```
 
 ### Option 3: Build release artifacts locally
@@ -93,8 +92,8 @@ go build -o carbonqt
 
 ## Commands
 
-- `carbonqt dashboard` - launch the interactive dashboard
-- `carbonqt run 10s` - monitor for a fixed duration and print a report
+- `GreenTrace dashboard` - launch the interactive dashboard
+- `GreenTrace run 10s` - monitor for a fixed duration and print a report
 
 ## Flags
 
