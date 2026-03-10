@@ -25,32 +25,50 @@ type dashboardModel struct {
 	system      models.SystemMetrics
 	processes   []models.ProcessMetrics
 	totalCarbon float64
-	trend       []float64
 	width       int
 	height      int
 	selected    int
+	armed       bool
+	armedPID    int32
 	status      string
 	err         error
+	loading     bool
+	splashIndex int
 }
 
 type dashboardTickMsg time.Time
+type splashTickMsg time.Time
+type splashDoneMsg struct{}
+
+const (
+	splashDuration = 2 * time.Second
+	splashInterval = 120 * time.Millisecond
+)
 
 func StartDashboard(config DashboardConfig) error {
-	model := dashboardModel{config: config}
+	model := dashboardModel{config: config, loading: true}
 	program := tea.NewProgram(model, tea.WithAltScreen())
 	_, err := program.Run()
 	return err
 }
 
 func (m dashboardModel) Init() tea.Cmd {
-	return tea.Tick(m.config.Refresh, func(t time.Time) tea.Msg {
-		return dashboardTickMsg(t)
-	})
+	return tea.Batch(
+		tea.Tick(splashInterval, func(t time.Time) tea.Msg {
+			return splashTickMsg(t)
+		}),
+		tea.Tick(splashDuration, func(time.Time) tea.Msg {
+			return splashDoneMsg{}
+		}),
+	)
 }
 
 func (m dashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case dashboardTickMsg:
+		if m.loading {
+			return m, nil
+		}
 		system, err := monitor.GetSystemMetrics()
 		if err != nil {
 			m.err = err
@@ -65,9 +83,6 @@ func (m dashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		total, processes := m.config.Estimator.ApplyCarbon(processes, m.config.Refresh)
 		sort.Slice(processes, func(i, j int) bool { return processes[i].CarbonKg > processes[j].CarbonKg })
-		if len(processes) > 10 {
-			processes = processes[:10]
-		}
 
 		if m.selected >= len(processes) {
 			m.selected = len(processes) - 1
@@ -75,19 +90,32 @@ func (m dashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.selected < 0 {
 			m.selected = 0
 		}
-
-		maxSamples := int((30 * time.Second) / m.config.Refresh)
-		if maxSamples < 1 {
-			maxSamples = 1
-		}
-		m.trend = append(m.trend, total)
-		if len(m.trend) > maxSamples {
-			m.trend = m.trend[len(m.trend)-maxSamples:]
+		if m.armed {
+			if findPIDIndex(processes, m.armedPID) == -1 {
+				m.armed = false
+				m.armedPID = 0
+			}
 		}
 
 		m.system = system
 		m.totalCarbon = total
 		m.processes = processes
+		return m, tea.Tick(m.config.Refresh, func(t time.Time) tea.Msg {
+			return dashboardTickMsg(t)
+		})
+	case splashTickMsg:
+		if !m.loading {
+			return m, nil
+		}
+		m.splashIndex++
+		return m, tea.Tick(splashInterval, func(t time.Time) tea.Msg {
+			return splashTickMsg(t)
+		})
+	case splashDoneMsg:
+		if !m.loading {
+			return m, nil
+		}
+		m.loading = false
 		return m, tea.Tick(m.config.Refresh, func(t time.Time) tea.Msg {
 			return dashboardTickMsg(t)
 		})
@@ -98,22 +126,56 @@ func (m dashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up":
 			if m.selected > 0 {
 				m.selected--
+				if m.armed && m.selected < len(m.processes) && m.processes[m.selected].PID != m.armedPID {
+					m.armed = false
+					m.armedPID = 0
+				}
 			}
 		case "down":
 			if m.selected < len(m.processes)-1 {
 				m.selected++
+				if m.armed && m.selected < len(m.processes) && m.processes[m.selected].PID != m.armedPID {
+					m.armed = false
+					m.armedPID = 0
+				}
 			}
+		case " ", "space":
+			if len(m.processes) == 0 || m.selected < 0 || m.selected >= len(m.processes) {
+				m.status = "No process to select."
+				return m, nil
+			}
+			pid := m.processes[m.selected].PID
+			name := m.processes[m.selected].Name
+			if m.armed && m.armedPID == pid {
+				m.armed = false
+				m.armedPID = 0
+				m.status = "Selection cleared."
+				return m, nil
+			}
+			m.armed = true
+			m.armedPID = pid
+			m.status = fmt.Sprintf("Selected %s (PID %d). Press K to kill.", name, pid)
 		case "k":
 			if len(m.processes) == 0 || m.selected < 0 || m.selected >= len(m.processes) {
 				m.status = "No process selected."
 				return m, nil
 			}
+			if !m.armed {
+				m.status = "Press Space to select a process before killing."
+				return m, nil
+			}
 			pid := m.processes[m.selected].PID
 			name := m.processes[m.selected].Name
+			if pid != m.armedPID {
+				m.status = "Selection changed. Press Space to select again."
+				return m, nil
+			}
 			if err := monitor.KillProcess(pid); err != nil {
 				m.status = fmt.Sprintf("Failed to kill %s (PID %d).", name, pid)
 				return m, nil
 			}
+			m.armed = false
+			m.armedPID = 0
 			m.status = fmt.Sprintf("Killed %s (PID %d).", name, pid)
 		}
 	case tea.WindowSizeMsg:
@@ -127,6 +189,14 @@ func (m dashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m dashboardModel) View() string {
 	if m.err != nil {
 		return fmt.Sprintf("Error: %v", m.err)
+	}
+
+	width := m.width
+	if width <= 0 {
+		width = 120
+	}
+	if m.loading {
+		return m.splashView(width)
 	}
 
 	systemInfoBlock := strings.Join([]string{
@@ -156,37 +226,93 @@ func (m dashboardModel) View() string {
 		topProcessBlock = "Highest Carbon Process\n(n/a)"
 	}
 
-	processBlock := RenderDashboardTableSelected(m.processes, m.selected, 10)
-
-	width := m.width
-	if width <= 0 {
-		width = 120
+	stackPanels := width < 120
+	panelWidth := width
+	if !stackPanels {
+		panelWidth = (width - 6) / 2
+		if panelWidth < 50 {
+			panelWidth = 50
+		}
 	}
-	leftWidth := (width - 6) / 2
-	if leftWidth < 50 {
-		leftWidth = 50
+	panelBox := panelStyle.Width(panelWidth)
+	badgeRow := strings.Join([]string{
+		renderBadge(fmt.Sprintf("CPU %.1f%%", m.system.CPUPercent)),
+		renderBadge(fmt.Sprintf("RAM %.1f%%", m.system.MemoryPercent)),
+		renderBadge(fmt.Sprintf("Total %s mg", formatCarbonMg(m.totalCarbon))),
+	}, " ")
+
+	systemPanel := panelBox.Render(panelTitleStyle.Render("System") + "\n" + systemInfoBlock + "\n\n" + systemBlock + "\n\n" + badgeRow)
+	carbonPanel := panelBox.Render(panelTitleStyle.Render("Carbon") + "\n" + carbonBlock + "\n\n" + panelTitleStyle.Render("Top Process") + "\n" + topProcessBlock)
+
+	var upperRow string
+	if stackPanels {
+		upperRow = lipgloss.JoinVertical(lipgloss.Left, systemPanel, carbonPanel)
+	} else {
+		upperRow = lipgloss.JoinHorizontal(lipgloss.Top, systemPanel, carbonPanel)
 	}
-	panelBox := lipgloss.NewStyle().Width(leftWidth)
-	systemPanel := panelBox.Render(headerStyle.Render("System") + "\n" + systemInfoBlock + "\n" + systemBlock)
-	carbonPanel := panelBox.Render(headerStyle.Render("Estimated Carbon Emissions") + "\n" + carbonBlock + "\n\n" + headerStyle.Render("Top Carbon Process") + "\n" + topProcessBlock)
 
-	upperRow := lipgloss.JoinHorizontal(lipgloss.Top, systemPanel, carbonPanel)
+	processBlock := RenderDashboardTableSelected(m.processes, m.selected, 12)
 
-	ribbon := "Up ^   Down v   K Kill   Q Quit"
-	if strings.TrimSpace(m.status) != "" {
-		ribbon = m.status + "  |  " + ribbon
-	}
-	ribbonStyle := lipgloss.NewStyle().Background(lipgloss.Color("231")).Foreground(lipgloss.Color("16")).Bold(true).Padding(0, 1).Align(lipgloss.Center)
-	ribbon = ribbonStyle.Width(width).Render(ribbon)
+	status := strings.TrimSpace(m.status)
+	ribbon := buildHelpBar(width, status)
 
-	title := titleStyle.Width(width).Align(lipgloss.Center).Render("greentrace Dashboard")
+	title := titleStyle.Width(width).Align(lipgloss.Center).Render("GreenTrace Dashboard")
+	processPanel := panelStyle.Width(width).Render(processBlock)
 	sections := []string{
 		title,
 		upperRow,
-		headerStyle.Render("Processes"),
-		panelStyle.Render(processBlock),
+		panelTitleStyle.Render("Processes"),
+		processPanel,
 		ribbon,
 	}
 
 	return lipgloss.NewStyle().Padding(1, 2).Render(strings.Join(sections, "\n\n"))
+}
+
+func buildHelpBar(width int, status string) string {
+	items := []string{
+		helpKeyStyle.Render("Up/Down"),
+		helpTextStyle.Render("Navigate"),
+		helpKeyStyle.Render("Space"),
+		helpTextStyle.Render("Select"),
+		helpKeyStyle.Render("K"),
+		helpTextStyle.Render("Kill"),
+		helpKeyStyle.Render("Q"),
+		helpTextStyle.Render("Quit"),
+	}
+	help := strings.Join(items, " ")
+	if status != "" {
+		help = status + "  |  " + help
+	}
+	return helpBarStyle.Width(width).Align(lipgloss.Center).Render(help)
+}
+
+func findPIDIndex(processes []models.ProcessMetrics, pid int32) int {
+	for i, proc := range processes {
+		if proc.PID == pid {
+			return i
+		}
+	}
+	return -1
+}
+
+func (m dashboardModel) splashView(width int) string {
+	frames := []string{"-", "\\", "|", "/"}
+	frame := frames[m.splashIndex%len(frames)]
+	art := []string{
+		"  ____                 _______                 ",
+		" / ___|_ __ ___  ___  |_   _| __ __ _  ___ ___ ",
+		"| |  _| '__/ _ \\/ _ \\   | || '__/ _` |/ __/ _ \\",
+		"| |_| | | |  __/  __/   | || | | (_| | (_|  __/",
+		" \\____|_|  \\___|\\___|   |_||_|  \\__,_|\\___\\___|",
+	}
+	statusText := fmt.Sprintf("Analyzing system metrics... %s", frame)
+	body := strings.Join(art, "\n")
+
+	content := strings.Join([]string{
+		splashTitle.Width(width).Align(lipgloss.Center).Render(body),
+		"",
+		splashSubtitle.Width(width).Align(lipgloss.Center).Render(statusText),
+	}, "\n")
+	return lipgloss.NewStyle().Padding(2, 2).Render(content)
 }

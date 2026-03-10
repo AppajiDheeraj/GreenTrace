@@ -11,13 +11,31 @@ import (
 )
 
 var (
-	titleStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("231"))
-	headerStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("205"))
-	mutedStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
-	panelStyle   = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(1, 2)
-	barFillStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("35"))
-	barBaseStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("238"))
-	selectStyle  = lipgloss.NewStyle().Background(lipgloss.Color("231")).Foreground(lipgloss.Color("16")).Bold(true)
+	accentPrimary   = lipgloss.Color("35")
+	accentSecondary = lipgloss.Color("34")
+	inkStrong       = lipgloss.Color("231")
+	inkMuted        = lipgloss.Color("244")
+	panelBorder     = lipgloss.Color("236")
+	panelBackdrop   = lipgloss.Color("22")
+	selectBg        = lipgloss.Color("120")
+	selectFg        = lipgloss.Color("16")
+
+	titleStyle      = lipgloss.NewStyle().Bold(true).Foreground(inkStrong)
+	headerStyle     = lipgloss.NewStyle().Bold(true).Foreground(accentPrimary)
+	mutedStyle      = lipgloss.NewStyle().Foreground(inkMuted)
+	panelStyle      = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(panelBorder).Padding(1, 2)
+	panelTitleStyle = lipgloss.NewStyle().Bold(true).Foreground(inkStrong).Background(accentSecondary).Padding(0, 1)
+	panelBadgeStyle = lipgloss.NewStyle().Bold(true).Foreground(inkStrong).Background(panelBackdrop).Padding(0, 1)
+	barFillStyle    = lipgloss.NewStyle().Foreground(accentPrimary)
+	barBaseStyle    = lipgloss.NewStyle().Foreground(panelBorder)
+	selectStyle     = lipgloss.NewStyle().Background(selectBg).Foreground(selectFg).Bold(true)
+	rowEvenStyle    = lipgloss.NewStyle().Foreground(inkMuted)
+	rowOddStyle     = lipgloss.NewStyle().Foreground(inkStrong)
+	helpKeyStyle    = lipgloss.NewStyle().Bold(true).Foreground(inkStrong).Background(panelBackdrop).Padding(0, 1)
+	helpTextStyle   = lipgloss.NewStyle().Foreground(inkMuted)
+	helpBarStyle    = lipgloss.NewStyle().Background(accentPrimary).Foreground(inkStrong).Bold(true).Padding(0, 1)
+	splashTitle     = lipgloss.NewStyle().Bold(true).Foreground(inkStrong)
+	splashSubtitle  = lipgloss.NewStyle().Foreground(inkMuted)
 )
 
 func RenderCarbonTrend(values []float64) string {
@@ -155,7 +173,11 @@ func renderTableSelected(headers []string, rows [][]string, selected int, maxRow
 			lines = append(lines, selectStyle.Width(totalWidth).Render(rowText))
 			continue
 		}
-		lines = append(lines, rowText)
+		if i%2 == 0 {
+			lines = append(lines, rowEvenStyle.Render(rowText))
+			continue
+		}
+		lines = append(lines, rowOddStyle.Render(rowText))
 	}
 
 	return strings.Join(lines, "\n")
@@ -198,6 +220,10 @@ func formatRow(values []string, widths []int, style lipgloss.Style) string {
 		cells[i] = style.Render(cell)
 	}
 	return strings.Join(cells, "  ")
+}
+
+func renderBadge(value string) string {
+	return panelBadgeStyle.Render(value)
 }
 
 func progressBar(width int, percent float64) string {

@@ -29,5 +29,5 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().Float64Var(&emissionFactor, "emission-factor", 2e-10, "Emission factor in kg CO2 per Joule")
 	rootCmd.PersistentFlags().Float64Var(&cpuTDP, "cpu-tdp", 65, "CPU TDP in Watts")
-	rootCmd.PersistentFlags().BoolVar(&repoOnly, "repo-only", true, "Filter processes to the current repository")
+	rootCmd.PersistentFlags().BoolVar(&repoOnly, "repo-only", false, "Filter processes to the current repository")
 }
