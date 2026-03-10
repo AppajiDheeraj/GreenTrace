@@ -1,6 +1,6 @@
 package main
 
-import "carbonqt/cmd"
+import "greentrace/cmd"
 
 func main() {
 	cmd.Execute()

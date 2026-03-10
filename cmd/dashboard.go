@@ -3,9 +3,9 @@ package cmd
 import (
 	"time"
 
-	"carbonqt/internal/energy"
-	"carbonqt/internal/repo"
-	"carbonqt/internal/ui"
+	"greentrace/internal/energy"
+	"greentrace/internal/repo"
+	"greentrace/internal/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -13,7 +13,7 @@ import (
 func newDashboardCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dashboard",
-		Short: "Launch the interactive CarbonQt dashboard",
+		Short: "Launch the interactive greentrace dashboard",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			repoRoot := ""
 			if repoOnly {

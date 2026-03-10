@@ -1,4 +1,4 @@
-module carbonqt
+module greentrace
 
 go 1.21
 

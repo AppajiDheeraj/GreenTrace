@@ -3,7 +3,7 @@ package energy
 import (
 	"time"
 
-	"carbonqt/internal/models"
+	"greentrace/internal/models"
 )
 
 type Estimator struct {

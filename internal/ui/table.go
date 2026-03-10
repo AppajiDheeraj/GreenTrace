@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"carbonqt/internal/models"
+	"greentrace/internal/models"
 
 	"github.com/charmbracelet/lipgloss"
 )

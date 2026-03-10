@@ -1,5 +1,5 @@
 GO ?= go
-BINARY ?= carbonqt
+BINARY ?= greentrace
 BUILD_DIR ?= bin
 EXE :=
 

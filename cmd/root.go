@@ -14,9 +14,9 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "carbonqt",
-	Short: "CarbonQt monitors process energy and carbon emissions",
-	Long:  "CarbonQt is a cross-platform CLI for estimating process energy use and carbon emissions.",
+	Use:   "greentrace",
+	Short: "greentrace monitors process energy and carbon emissions",
+	Long:  "greentrace is a cross-platform CLI for estimating process energy use and carbon emissions.",
 }
 
 func Execute() {

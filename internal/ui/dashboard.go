@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"carbonqt/internal/energy"
-	"carbonqt/internal/models"
-	"carbonqt/internal/monitor"
+	"greentrace/internal/energy"
+	"greentrace/internal/models"
+	"greentrace/internal/monitor"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -179,7 +179,7 @@ func (m dashboardModel) View() string {
 	ribbonStyle := lipgloss.NewStyle().Background(lipgloss.Color("231")).Foreground(lipgloss.Color("16")).Bold(true).Padding(0, 1).Align(lipgloss.Center)
 	ribbon = ribbonStyle.Width(width).Render(ribbon)
 
-	title := titleStyle.Width(width).Align(lipgloss.Center).Render("CarbonQt Dashboard")
+	title := titleStyle.Width(width).Align(lipgloss.Center).Render("greentrace Dashboard")
 	sections := []string{
 		title,
 		upperRow,

@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $RootDir = Resolve-Path (Join-Path $PSScriptRoot "..")
 $OutDir = Join-Path $RootDir "dist"
-$Binary = "carbonqt"
+$Binary = "greentrace"
 
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 

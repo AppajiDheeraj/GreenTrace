@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"carbonqt/internal/models"
+	"greentrace/internal/models"
 
 	"github.com/shirou/gopsutil/v3/process"
 )

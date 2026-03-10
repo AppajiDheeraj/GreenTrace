@@ -1,7 +1,7 @@
 package monitor
 
 import (
-	"carbonqt/internal/models"
+	"greentrace/internal/models"
 
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/host"

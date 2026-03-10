@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="$ROOT_DIR/dist"
-BINARY="carbonqt"
+BINARY="greentrace"
 
 mkdir -p "$OUT_DIR"
 

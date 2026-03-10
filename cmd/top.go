@@ -5,10 +5,10 @@ import (
 	"sort"
 	"time"
 
-	"carbonqt/internal/energy"
-	"carbonqt/internal/monitor"
-	"carbonqt/internal/repo"
-	"carbonqt/internal/ui"
+	"greentrace/internal/energy"
+	"greentrace/internal/monitor"
+	"greentrace/internal/repo"
+	"greentrace/internal/ui"
 
 	"github.com/spf13/cobra"
 )
