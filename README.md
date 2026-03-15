@@ -94,18 +94,22 @@ go build -o GreenTrace
 
 - `GreenTrace dashboard` - launch the interactive dashboard
 - `GreenTrace run 10s` - monitor for a fixed duration and print a report
+- `GreenTrace top` - show top processes by carbon emissions
+- `GreenTrace query chrome` - search running processes by name
+- `GreenTrace completion powershell` - generate shell completion script
 
 ## Flags
 
-- `--repo-only` (default: true) - restrict process list to the current repository
+- `--repo-only` (default: false) - restrict process list to the current repository
 - `--cpu-tdp` - CPU TDP in watts (default: 65)
 - `--emission-factor` - kg CO2 per joule (default: 2e-10)
 
 ## Controls (Dashboard)
 
-- Up/Down - select process
-- `K` - kill selected process
-- `Q` - quit
+- Up/Down - navigate processes
+- Space - select a process
+- `k` - kill selected process
+- `q` - quit
 
 ## Notes
 
