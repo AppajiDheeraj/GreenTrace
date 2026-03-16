@@ -53,12 +53,19 @@ func WritePDF(basePath string, data ReportData, opts PDFOptions) (string, error)
 	pdf.SetAutoPageBreak(true, 18)
 	pdf.SetTitle(opts.Title, true)
 	pdf.SetCreator("greentrace", true)
+	pdf.AliasNbPages("")
+	generatedLabel := data.GeneratedAt.Format("02 Jan 2006")
 
 	pdf.SetFooterFunc(func() {
 		pdf.SetY(-14)
 		pdf.SetFont("Helvetica", "", 9)
 		pdf.SetTextColor(120, 120, 120)
-		pdf.CellFormat(0, 8, fmt.Sprintf("Page %d", pdf.PageNo()), "", 0, "C", false, 0, "")
+		left := "GreenTrace Carbon Report"
+		center := fmt.Sprintf("Generated on %s", generatedLabel)
+		right := fmt.Sprintf("Page %d / {nb}", pdf.PageNo())
+		pdf.CellFormat(60, 8, left, "", 0, "L", false, 0, "")
+		pdf.CellFormat(70, 8, center, "", 0, "C", false, 0, "")
+		pdf.CellFormat(0, 8, right, "", 0, "R", false, 0, "")
 	})
 
 	addCoverPage(pdf, data, opts)
@@ -206,7 +213,7 @@ func addTablePage(pdf *gofpdf.Fpdf, data ReportData, opts PDFOptions) {
 	pdf.CellFormat(0, 10, "Processes", "", 1, "L", false, 0, "")
 	pdf.Ln(2)
 
-	header := []string{"PID", "Name", "CPU%", "MEM%", "Power (W)", "Carbon (mg)"}
+	header := []string{"PID", "Name", "CPU (%)", "MEM (%)", "Power (W)", "Carbon (mg)"}
 	widths := []float64{14, 70, 14, 14, 22, 20}
 	rowH := 6.0
 	headerH := 7.0
@@ -343,7 +350,7 @@ func drawLineChart(pdf *gofpdf.Fpdf, x, y, w, h float64, values []float64, unit 
 	pdf.SetTextColor(90, 90, 90)
 	pdf.SetFont("Helvetica", "", 8)
 	pdf.SetXY(x, y+h+2)
-	pdf.CellFormat(w, 4, fmt.Sprintf("min %.6f %s  max %.6f %s", minVal, unit, maxVal, unit), "", 0, "L", false, 0, "")
+	pdf.CellFormat(w, 4, fmt.Sprintf("Min: %.4f %s   |   Max: %.4f %s", minVal, unit, maxVal, unit), "", 0, "L", false, 0, "")
 	pdf.SetY(y + h + 6)
 }
 
