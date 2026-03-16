@@ -47,6 +47,7 @@ func GetSystemMetrics() (models.SystemMetrics, error) {
 	return models.SystemMetrics{
 		CPUPercent:       cpuPercent,
 		MemoryPercent:    memStats.UsedPercent,
+		MemoryUsedBytes:  memStats.Used,
 		CPUModel:         cpuModel,
 		CPUCores:         cores,
 		MemoryTotalBytes: memStats.Total,

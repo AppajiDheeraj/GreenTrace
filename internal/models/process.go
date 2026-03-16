@@ -18,6 +18,7 @@ type ProcessMetrics struct {
 type SystemMetrics struct {
 	CPUPercent       float64
 	MemoryPercent    float64
+	MemoryUsedBytes  uint64
 	CPUModel         string
 	CPUCores         int
 	MemoryTotalBytes uint64

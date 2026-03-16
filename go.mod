@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/lipgloss v0.10.0
+	github.com/phpdave11/gofpdf v1.4.2
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/sys v0.20.0
